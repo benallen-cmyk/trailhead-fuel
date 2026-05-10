@@ -183,6 +183,18 @@ body{font-family:"DM Sans",sans-serif;background:var(--bg);color:var(--text);min
 .toast{position:fixed;bottom:40px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--accent);color:var(--surface2);font-family:"JetBrains Mono",monospace;font-weight:700;font-size:13px;padding:10px 20px;border-radius:30px;opacity:0;transition:all .3s;z-index:700;white-space:nowrap}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
+
+  .tracker-section { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; margin-bottom:16px; }
+  .tracker-section-header { padding:14px 16px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; }
+  .tracker-section-title { font-family:"Bebas Neue",sans-serif; font-size:16px; letter-spacing:2px; color:var(--off-white); }
+  .tracker-section-chevron { font-size:14px; color:var(--muted); transition:transform 0.2s; }
+  .tracker-section-chevron.open { transform:rotate(180deg); }
+  .tracker-section-body { display:none; border-top:1px solid var(--border); }
+  .tracker-section-body.open { display:block; }
+  .tracker-scroll { max-height:320px; overflow-y:auto; }
+  .tracker-scroll::-webkit-scrollbar { width:4px; }
+  .tracker-scroll::-webkit-scrollbar-track { background:var(--surface2); }
+  .tracker-scroll::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
 input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none}
 </style>
   <link rel="manifest" href="manifest.json">
@@ -217,19 +229,19 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
     <div class="home-tagline">Eat with purpose. Train without limits.</div>
     <div class="home-nav-btns">
       <button class="home-btn c1" onclick="showPage('today')">
-        <div><div class="hb-title" style="color:var(--accent)">Today</div><div class="hb-sub">Your meals right now</div></div>
+        <div style="text-align:left"><div class="hb-title" style="color:var(--accent)">Today</div><div class="hb-sub">Your meals right now</div></div>
         <div class="hb-arrow">&#8594;</div>
       </button>
       <button class="home-btn c2" onclick="showPage('planner')">
-        <div><div class="hb-title" style="color:var(--accent2)">Week Planner</div><div class="hb-sub">Pick your dinners</div></div>
+        <div style="text-align:left"><div class="hb-title" style="color:var(--accent2)">Week Planner</div><div class="hb-sub">Pick your dinners</div></div>
         <div class="hb-arrow">&#8594;</div>
       </button>
       <button class="home-btn c3" onclick="showPage('tracker')">
-        <div><div class="hb-title" style="color:var(--sand)">Progress</div><div class="hb-sub">Weight & body fat tracker</div></div>
+        <div style="text-align:left"><div class="hb-title" style="color:var(--sand)">Progress</div><div class="hb-sub">Weight &amp; body fat tracker</div></div>
         <div class="hb-arrow">&#8594;</div>
       </button>
       <button class="home-btn c4" onclick="showPage('settings')">
-        <div><div class="hb-title" style="color:var(--muted)">Settings</div><div class="hb-sub">Targets & add dinners</div></div>
+        <div style="text-align:left"><div class="hb-title" style="color:var(--muted)">Settings</div><div class="hb-sub">Targets &amp; add dinners</div></div>
         <div class="hb-arrow">&#8594;</div>
       </button>
     </div>
@@ -278,12 +290,41 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
       <button class="btn-primary" onclick="logWeight()">Save Entry</button>
     </div>
     <div class="stats-row" id="tracker-stats"></div>
-    <div class="section-label" style="margin-bottom:12px">History</div>
-    <div class="tracker-table">
-      <div class="tracker-table-header">
-        <span>Date</span><span>Weight</span><span>BF%</span><span>7d Avg</span>
+
+    <!-- WEIGHT TREND GRAPH -->
+    <div class="tracker-section" style="margin-bottom:16px">
+      <div class="tracker-section-header" onclick="toggleGraph()">
+        <div class="tracker-section-title">Weight Trend</div>
+        <div class="tracker-section-chevron open" id="graph-chevron">&#9660;</div>
       </div>
-      <div id="tracker-rows"></div>
+      <div class="tracker-section-body open" id="graph-body">
+        <div style="padding:12px 16px 4px;display:flex;gap:8px;flex-wrap:wrap">
+          <button class="filter-chip active" id="range-30" onclick="setGraphRange(30)">30 days</button>
+          <button class="filter-chip" id="range-90" onclick="setGraphRange(90)">90 days</button>
+          <button class="filter-chip" id="range-all" onclick="setGraphRange(0)">All</button>
+        </div>
+        <div style="padding:8px 16px 16px">
+          <canvas id="weight-chart" style="width:100%;height:180px;display:block"></canvas>
+          <div style="display:flex;gap:16px;margin-top:8px;flex-wrap:wrap">
+            <div style="display:flex;align-items:center;gap:6px;font-family:JetBrains Mono,monospace;font-size:10px;color:var(--muted)"><div style="width:16px;height:2px;background:var(--accent);opacity:0.5;border-radius:1px"></div>Daily weight</div>
+            <div style="display:flex;align-items:center;gap:6px;font-family:JetBrains Mono,monospace;font-size:10px;color:var(--muted)"><div style="width:16px;height:2px;background:var(--accent2);border-radius:1px"></div>7-day avg</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="tracker-section">
+      <div class="tracker-section-header" onclick="toggleTrackerHistory()">
+        <div class="tracker-section-title">History</div>
+        <div class="tracker-section-chevron" id="tracker-history-chevron">&#9660;</div>
+      </div>
+      <div class="tracker-section-body" id="tracker-history-body">
+        <div class="tracker-scroll">
+          <div class="tracker-table-header">
+            <span>Date</span><span>Weight</span><span>BF%</span><span>7d Avg</span>
+          </div>
+          <div id="tracker-rows"></div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -797,6 +838,7 @@ function renderTracker() {
 
   renderTrackerStats();
   renderTrackerRows();
+  setTimeout(drawGraph, 100);
 }
 
 function updateBMI() {
@@ -821,6 +863,7 @@ function logWeight() {
   saveStorage(storage);
   renderTrackerStats();
   renderTrackerRows();
+  setTimeout(drawGraph, 100);
   showToast("Entry saved!");
 }
 
@@ -949,6 +992,168 @@ function renderDinnerBankList() {
 // ============================================================
 // TOAST & INIT
 // ============================================================
+
+// ---- GRAPH ----
+let graphRange = 30;
+
+function setGraphRange(days) {
+  graphRange = days;
+  ["30","90","all"].forEach(function(r) {
+    const el = document.getElementById("range-" + r);
+    if (el) el.classList.remove("active");
+  });
+  const key = days === 30 ? "30" : days === 90 ? "90" : "all";
+  const activeEl = document.getElementById("range-" + key);
+  if (activeEl) activeEl.classList.add("active");
+  drawGraph();
+}
+
+function toggleGraph() {
+  const body = document.getElementById("graph-body");
+  const chev = document.getElementById("graph-chevron");
+  if (!body) return;
+  body.classList.toggle("open");
+  chev.classList.toggle("open");
+  if (body.classList.contains("open")) setTimeout(drawGraph, 50);
+}
+
+function toggleTrackerHistory() {
+  const body = document.getElementById("tracker-history-body");
+  const chev = document.getElementById("tracker-history-chevron");
+  if (!body) return;
+  body.classList.toggle("open");
+  if (chev) chev.classList.toggle("open");
+}
+
+function drawGraph() {
+  const canvas = document.getElementById("weight-chart");
+  if (!canvas) return;
+  const t = storage.tracker || [];
+  if (t.length < 2) {
+    const ctx = canvas.getContext("2d");
+    canvas.width = canvas.offsetWidth * window.devicePixelRatio || 300;
+    canvas.height = 180 * window.devicePixelRatio || 180;
+    ctx.scale(window.devicePixelRatio || 1, window.devicePixelRatio || 1);
+    ctx.fillStyle = "#9aaf97";
+    ctx.font = "12px DM Sans, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("Log at least 2 entries to see your trend", canvas.offsetWidth/2, 90);
+    return;
+  }
+
+  // Filter by range
+  let data = [...t].sort(function(a,b){ return a.date.localeCompare(b.date); });
+  if (graphRange > 0) {
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - graphRange);
+    const cutStr = cutoff.toISOString().split("T")[0];
+    data = data.filter(function(e){ return e.date >= cutStr; });
+  }
+  if (data.length < 1) return;
+
+  // Compute 7-day averages
+  const allSorted = [...t].sort(function(a,b){ return a.date.localeCompare(b.date); });
+  function get7Avg(entries, upToDate) {
+    const cutoff = new Date(upToDate + "T00:00:00");
+    cutoff.setDate(cutoff.getDate() - 6);
+    const cutStr = cutoff.toISOString().split("T")[0];
+    const slice = entries.filter(function(e){ return e.date >= cutStr && e.date <= upToDate; });
+    return slice.length ? slice.reduce(function(a,e){ return a+e.weight; },0)/slice.length : null;
+  }
+
+  const avgs = data.map(function(e){ return get7Avg(allSorted, e.date); });
+
+  // Canvas setup
+  const dpr = window.devicePixelRatio || 1;
+  const W = canvas.offsetWidth || 320;
+  const H = 180;
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
+  canvas.style.width = W + "px";
+  canvas.style.height = H + "px";
+  const ctx = canvas.getContext("2d");
+  ctx.scale(dpr, dpr);
+
+  const pad = { top:16, right:16, bottom:32, left:44 };
+  const gW = W - pad.left - pad.right;
+  const gH = H - pad.top - pad.bottom;
+
+  // Value range
+  const weights = data.map(function(e){ return e.weight; });
+  const avgVals = avgs.filter(function(v){ return v !== null; });
+  const minV = Math.min(...weights, ...avgVals) - 1;
+  const maxV = Math.max(...weights, ...avgVals) + 1;
+  const range = maxV - minV || 1;
+
+  function xPos(i) { return pad.left + (i / (data.length - 1)) * gW; }
+  function yPos(v) { return pad.top + (1 - (v - minV) / range) * gH; }
+
+  // Background
+  ctx.fillStyle = "#232f22";
+  ctx.roundRect(0, 0, W, H, 8);
+  ctx.fill();
+
+  // Grid lines
+  ctx.strokeStyle = "#4a5c47";
+  ctx.lineWidth = 0.5;
+  const steps = 4;
+  for (let i = 0; i <= steps; i++) {
+    const v = minV + (i / steps) * range;
+    const y = yPos(v);
+    ctx.beginPath();
+    ctx.moveTo(pad.left, y);
+    ctx.lineTo(W - pad.right, y);
+    ctx.stroke();
+    ctx.fillStyle = "#9aaf97";
+    ctx.font = "9px JetBrains Mono, monospace";
+    ctx.textAlign = "right";
+    ctx.fillText(v.toFixed(1), pad.left - 4, y + 3);
+  }
+
+  // X axis labels (show first, middle, last)
+  ctx.fillStyle = "#9aaf97";
+  ctx.font = "9px JetBrains Mono, monospace";
+  ctx.textAlign = "center";
+  const labelIdxs = [0, Math.floor((data.length-1)/2), data.length-1];
+  labelIdxs.forEach(function(i) {
+    if (data[i]) {
+      const d = new Date(data[i].date + "T00:00:00");
+      const label = d.toLocaleDateString("en-GB", { day:"numeric", month:"short" });
+      ctx.fillText(label, xPos(i), H - 6);
+    }
+  });
+
+  // Daily weight line (dimmed)
+  ctx.beginPath();
+  ctx.strokeStyle = "rgba(76,199,196,0.4)";
+  ctx.lineWidth = 1.5;
+  data.forEach(function(e, i) {
+    const x = xPos(i); const y = yPos(e.weight);
+    i === 0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+  });
+  ctx.stroke();
+
+  // Dots for daily
+  data.forEach(function(e, i) {
+    ctx.beginPath();
+    ctx.fillStyle = "rgba(76,199,196,0.5)";
+    ctx.arc(xPos(i), yPos(e.weight), 2.5, 0, Math.PI*2);
+    ctx.fill();
+  });
+
+  // 7-day avg line (solid, prominent)
+  ctx.beginPath();
+  ctx.strokeStyle = "#D7883C";
+  ctx.lineWidth = 2.5;
+  let started = false;
+  avgs.forEach(function(avg, i) {
+    if (avg === null) return;
+    const x = xPos(i); const y = yPos(avg);
+    if (!started) { ctx.moveTo(x,y); started=true; } else { ctx.lineTo(x,y); }
+  });
+  ctx.stroke();
+}
+
 function showToast(msg) {
   const t = document.getElementById("toast");
   t.textContent = msg; t.classList.add("show");
